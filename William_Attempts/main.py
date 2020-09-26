@@ -20,7 +20,9 @@ target = RDK.Item('Home')   # existing target in station
 robot.setPoseFrame(world_frame)
 robot.setPoseTool(robot.PoseTool())
 
-#Existing subprograms
+# Existing subprograms
+
+'''
 RDK.RunProgram("Grinder Tool Attach (Stand)", True)
 RDK.RunProgram("Grinder Tool Attach (Stand)", True)
 RDK.RunProgram("Portafilter Tool Attach (Stand)", True)
@@ -32,13 +34,56 @@ RDK.RunProgram("Cup Tool Close", True)
 RDK.RunProgram("Portafilter Tool Attach (Grinder)", True)
 RDK.RunProgram("Portafilter Tool Detach (Grinder)", True)
 RDK.RunProgram("Portafilter Tool Detach (Silvia)", True)
+'''
 
+# Global angle transforms.
+theta_coffee_machine = 15.04
+theta_grinder = 134.86
+theta_press = 59.73
+
+# Define the base transforms.
+T_coffee_machine_base_np = np.array([[cos(theta_coffee_machine), -sin(theta_coffee_machine, 0.000000, -366.200000]
+                                     [sin(theta_coffee_machine), cos(theta_coffee_machine), 0.000000, -389.800000]
+                                     [                 0.000000,                  0.000000, 1.000000,  341.380000]
+                                     [                 0.000000,                  0.000000, 0.000000,    1.000000]])
+
+T_coffee_machine_base = rdk.Mat(T_coffee_machine_base_np.tolist())
+
+T_grinder_base_np = np.array([[cos(theta_grinder), -sin(theta_grinder), 0.000000,  482.290000]
+                              [sin(theta_grinder),  cos(theta_grinder), 0.000000, -433.740000]
+                              [          0.000000,            0.000000, 1.000000,  314.130000]
+                              [          0.000000,            0.000000, 0.000000,    1.000000]])
+
+T_grinder_base = rdk.Mat(T_grinder_base_np.tolist())
+
+T_press_base_np = np.array([[cos(theta_press), -sin(theta_press), 0.000000,  599.130000]
+                            [sin(theta_press),  cos(theta_press), 0.000000,    0.000000]
+                            [        0.000000,          0.000000, 1.000000,  156.070000]
+                            [        0.000000,          0.000000, 0.000000,    1.000000]])
+
+T_press_base = rdk.Mat(T_press_base_np.tolist())
+                                    
+T_cup_base_np = np.array([[0.000000, 0.000000, 0.000000,    1.490000]
+                          [0.000000, 0.000000, 0.000000, -600.540000]
+                          [0.000000, 0.000000, 1.000000,  -20.000000]
+                          [0.000000, 0.000000, 0.000000,    1.000000]])
+
+T_cup_base = rdk.Mat(T_cup_base_np.tolist())
+
+T_tool_stand_base_np = np.array([[0.000000, 0.000000, 0.000000, -544.570000]
+                                 [0.000000, 0.000000, 0.000000,  -80.150000]
+                                 [0.000000, 0.000000, 1.000000,   19.050000]
+                                 [0.000000, 0.000000, 0.000000,    1.000000]])
+
+T_tool_stand_base = rdk.Mat(T_tool_stand_base_np.tolist())
+
+""" Initial Code. """                                    
 # Directly use the RDK Matrix object from to hold pose (its an HT)
-T_home = rdk.Mat([[     0.000000,     0.000000,     1.000000,   523.370000 ],
-     [-1.000000,     0.000000,     0.000000,  -109.000000 ],
-     [-0.000000,    -1.000000,     0.000000,   607.850000 ],
-      [0.000000,     0.000000,     0.000000,     1.000000 ]])
-
+T_home = rdk.Mat([[ 0.000000,  0.000000, 1.000000,  523.370000 ],
+                  [-1.000000,  0.000000, 0.000000, -109.000000 ],
+                  [-0.000000, -1.000000, 0.000000,  607.850000 ],
+                  [ 0.000000,  0.000000, 0.000000,    1.000000 ]])
+                                 
 # Joint angles
 J_intermediatepoint = [-151.880896, -97.616411, -59.103383, -112.890980, 90.242082, -161.879346]
 
@@ -50,7 +95,9 @@ T_grinderapproach_np = np.array([[     0.173648,    -0.984800,    -0.004000,  -5
 
 T_grinderapproach = rdk.Mat(T_grinderapproach_np.tolist())
 
+""" Finish. """
 
+# Set up Robot moves and function calls in desired fashion.
 robot.MoveJ(T_home, blocking=True)
 robot.MoveJ(J_intermediatepoint, blocking=True)
 robot.MoveL(T_grinderapproach, blocking=True)
