@@ -42,37 +42,37 @@ theta_grinder = 134.86
 theta_press = 59.73
 
 # Define the base transforms.
-T_coffee_machine_base_np = np.array([[cos(theta_coffee_machine), -sin(theta_coffee_machine, 0.000000, -366.200000]
-                                     [sin(theta_coffee_machine), cos(theta_coffee_machine), 0.000000, -389.800000]
-                                     [                 0.000000,                  0.000000, 1.000000,  341.380000]
-                                     [                 0.000000,                  0.000000, 0.000000,    1.000000]])
+T_coffee_machine_base_np = np.array([[np.cos(theta_coffee_machine), -np.sin(theta_coffee_machine), 0.000000, -366.200000],
+                                     [np.sin(theta_coffee_machine),  np.cos(theta_coffee_machine), 0.000000, -389.800000],
+                                     [                    0.000000,                      0.000000, 1.000000,  341.380000],
+                                     [                    0.000000,                      0.000000, 0.000000,    1.000000]])
 
 T_coffee_machine_base = rdk.Mat(T_coffee_machine_base_np.tolist())
 
-T_grinder_base_np = np.array([[cos(theta_grinder), -sin(theta_grinder), 0.000000,  482.290000]
-                              [sin(theta_grinder),  cos(theta_grinder), 0.000000, -433.740000]
-                              [          0.000000,            0.000000, 1.000000,  314.130000]
-                              [          0.000000,            0.000000, 0.000000,    1.000000]])
+T_grinder_base_np = np.array([[np.cos(theta_grinder), -np.sin(theta_grinder), 0.000000,  482.290000],
+                              [np.sin(theta_grinder),  np.cos(theta_grinder), 0.000000, -433.740000],
+                              [             0.000000,               0.000000, 1.000000,  314.130000],
+                              [             0.000000,               0.000000, 0.000000,    1.000000]])
 
 T_grinder_base = rdk.Mat(T_grinder_base_np.tolist())
 
-T_press_base_np = np.array([[cos(theta_press), -sin(theta_press), 0.000000,  599.130000]
-                            [sin(theta_press),  cos(theta_press), 0.000000,    0.000000]
-                            [        0.000000,          0.000000, 1.000000,  156.070000]
-                            [        0.000000,          0.000000, 0.000000,    1.000000]])
+T_press_base_np = np.array([[np.cos(theta_press), -np.sin(theta_press), 0.000000,  599.130000],
+                            [np.sin(theta_press),  np.cos(theta_press), 0.000000,    0.000000],
+                            [           0.000000,             0.000000, 1.000000,  156.070000],
+                            [           0.000000,             0.000000, 0.000000,    1.000000]])
 
 T_press_base = rdk.Mat(T_press_base_np.tolist())
                                     
-T_cup_base_np = np.array([[0.000000, 0.000000, 0.000000,    1.490000]
-                          [0.000000, 0.000000, 0.000000, -600.540000]
-                          [0.000000, 0.000000, 1.000000,  -20.000000]
+T_cup_base_np = np.array([[0.000000, 0.000000, 0.000000,    1.490000],
+                          [0.000000, 0.000000, 0.000000, -600.540000],
+                          [0.000000, 0.000000, 1.000000,  -20.000000],
                           [0.000000, 0.000000, 0.000000,    1.000000]])
 
 T_cup_base = rdk.Mat(T_cup_base_np.tolist())
 
-T_tool_stand_base_np = np.array([[0.000000, 0.000000, 0.000000, -544.570000]
-                                 [0.000000, 0.000000, 0.000000,  -80.150000]
-                                 [0.000000, 0.000000, 1.000000,   19.050000]
+T_tool_stand_base_np = np.array([[0.000000, 0.000000, 0.000000, -544.570000],
+                                 [0.000000, 0.000000, 0.000000,  -80.150000],
+                                 [0.000000, 0.000000, 1.000000,   19.050000],
                                  [0.000000, 0.000000, 0.000000,    1.000000]])
 
 T_tool_stand_base = rdk.Mat(T_tool_stand_base_np.tolist())
@@ -103,14 +103,14 @@ robot.MoveJ(J_intermediatepoint, blocking=True)
 robot.MoveL(T_grinderapproach, blocking=True)
 
 
-grinder_tool_attach.RunCode(grinder_tool_attach) # call subprogram
-rdk.pause(3)  # to allow subprogram to complete
-grinder_tool_detach.RunCode(grinder_tool_detach) # call subfunction
+ # call subprogram
+ # to allow subprogram to complete
+ # call subfunction
 
 # The following pause is very important - if it is not present, or long enough
 # the frame reset below it occurs before the subprogram completes and this
 # causes problems...
-rdk.pause(3)    
+   
 # Note, the subfunctions change the reference frame, so you need to change it back
 # after calling them
 robot.setPoseFrame(world_frame)
