@@ -36,10 +36,10 @@ RDK.RunProgram("Portafilter Tool Detach (Grinder)", True)
 RDK.RunProgram("Portafilter Tool Detach (Silvia)", True)
 '''
 
-# Global angle transforms.
-theta_coffee_machine = 15.04
-theta_grinder = 134.86
-theta_press = 59.73
+# Global angle transforms. Degrees --> radians.
+theta_coffee_machine = np.radians(15.04)
+theta_grinder = np.radians(134.86)
+theta_press = np.radians(59.73)
 
 # Define the base transforms.
 T_coffee_machine_base_np = np.array([[np.cos(theta_coffee_machine), -np.sin(theta_coffee_machine), 0.000000, -366.200000],
@@ -99,9 +99,34 @@ T_grinderapproach = rdk.Mat(T_grinderapproach_np.tolist())
 
 # Set up Robot moves and function calls in desired fashion.
 robot.MoveJ(T_home, blocking=True)
+
+rdk.pause(3)
+
 robot.MoveJ(J_intermediatepoint, blocking=True)
+
+rdk.pause(3)
+
 robot.MoveL(T_grinderapproach, blocking=True)
 
+rdk.pause(3)
+
+robot.MoveJ(T_coffee_machine_base, blocking=True)
+
+rdk.pause(3)
+
+robot.MoveJ(T_grinder_base, blocking=True)
+
+rdk.pause(3)
+
+robot.MoveJ(T_press_base, blocking=True) 
+
+rdk.pause(3)
+
+robot.MoveJ(T_cup_base, blocking=True) 
+
+rdk.pause(3)
+
+robot.MoveJ(T_tool_stand_base, blocking=True)
 
  # call subprogram
  # to allow subprogram to complete
