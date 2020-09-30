@@ -19,6 +19,9 @@ target = RDK.Item('Home')                   # Existing target in station
 robot.setPoseFrame(world_frame)
 robot.setPoseTool(robot.PoseTool())
 
+master_tool = RDK.Item('Master Tool')
+robot.setPoseTool(master_tool)
+
 # Define existing subprograms.
 
 ###
@@ -70,10 +73,10 @@ T_cup_edge_np = T_cup_centre_tool_np + np.array([[0.000000, 0.000000, 0.000000, 
 
 T_cup_edge = rdk.Mat(T_cup_edge_np.tolist())
 
-T_cup_angle_np = T_cup_edge_np + np.array([[1.000000,                 0.000000,                0.000000, 0.000000],
-                                           [0.000000,  np.cos(np.radians(150)), np.sin(np.radians(150)), 0.000000],
-                                           [0.000000, -np.sin(np.radians(150)), np.cos(np.radians(150)), 0.000000],
-                                           [0.000000,                 0.000000,                0.000000, 1.000000]])
+T_cup_angle_np =  np.matmul(np.array([[np.cos(np.radians(40)), -np.sin(np.radians(40)), 0.000000, 0.000000],
+                                      [np.sin(np.radians(40)),  np.cos(np.radians(40)), 0.000000, 0.000000],
+                                      [              0.000000,                0.000000, 1.000000, 0.000000],
+                                      [              0.000000,                0.000000, 0.000000, 1.000000]]), T_cup_edge_np)
 
 T_cup_angle = rdk.Mat(T_cup_angle_np.tolist())                           
 
@@ -111,17 +114,17 @@ J_cup_align_grab = [-63.510000, -85.360000, -143.820000, -130.810000, -63.510000
 
 """ ROBOT SCHEDULER. """
 # Set up Robot moves and function calls in desired fashion.
-robot.MoveJ(T_home, blocking=True)                   
+#robot.MoveJ(T_home, blocking=True)                   
 
-robot.MoveJ(J_cup_tool_orient, blocking=True) 
+#robot.MoveJ(J_cup_tool_orient, blocking=True) 
 
-RDK.RunProgram("Cup Tool Attach (Stand)", True)
+#RDK.RunProgram("Cup Tool Attach (Stand)", True)
 
-RDK.RunProgram("Cup Tool Open", True)
+#RDK.RunProgram("Cup Tool Open", True)
 
-robot.MoveJ(J_cup_intermediate_point, blocking=True) 
+#robot.MoveJ(J_cup_intermediate_point, blocking=True) 
 
-robot.MoveJ(J_cup_intermediate_point_2, blocking=True) 
+#robot.MoveJ(J_cup_intermediate_point_2, blocking=True) 
 
 #robot.MoveJ(T_cup_base, blocking=True) 
 
@@ -129,23 +132,23 @@ robot.MoveJ(J_cup_intermediate_point_2, blocking=True)
 
 #robot.MoveJ(T_cup_centre_tool, blocking=True) 
 
-r#obot.MoveJ(T_cup_edge, blocking=True) 
+robot.MoveJ(T_cup_edge, blocking=True) 
 
-#robot.MoveJ(T_cup_angle, blocking=True) 
+robot.MoveJ(T_cup_angle, blocking=True) 
 
-robot.MoveJ(J_cup_align_grab, blocking=True) 
+#robot.MoveJ(J_cup_align_grab, blocking=True) 
 
-rdk.pause(10)
+#rdk.pause(10)
 
-RDK.RunProgram("Cup Tool Close", True)
+#RDK.RunProgram("Cup Tool Close", True)
 
-robot.MoveJ(J_cup_intermediate_point_2, blocking=True) 
+#robot.MoveJ(J_cup_intermediate_point_2, blocking=True) 
 
-robot.MoveJ(J_cup_intermediate_point, blocking=True) 
+#robot.MoveJ(J_cup_intermediate_point, blocking=True) 
 
-robot.MoveJ(J_cup_tool_orient, blocking=True) 
+#robot.MoveJ(J_cup_tool_orient, blocking=True) 
 
-RDK.RunProgram("Cup Tool Detach (Stand)", True)
+#RDK.RunProgram("Cup Tool Detach (Stand)", True)
 
 # Note, the subfunctions change the reference frame, so you need to change it back
 # after calling them
