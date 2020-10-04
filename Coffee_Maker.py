@@ -35,12 +35,12 @@ J_intermediatePortafilter = [-156.440056, -81.180555, -75.398392, -113.543732, 8
 
 #Transform to Portafilter Tool
 #First need to spin TCP 50degrees using following transform
-theta_CL_PFA = np.radians(50) #change 50 degree angle before moving 7.5 degrees
+theta_CL_PFA = np.radians(50) #change 50 degree angle before moving 7.5 degrees PFA portafilter angle
 T_TCP_PFA_np = np.array([[ np.cos(theta_CL_PFA), -np.sin(theta_CL_PFA), 0.00,    0.00],
                      [ np.sin(theta_CL_PFA),  np.cos(theta_CL_PFA), 0.00,    0.00],
                      [                   0.00,                    0.00, 1.00,    0.00],
                      [                   0.00,                    0.00, 0.00,    1.00]])
-theta_T_TCP_PFT = np.radians(7.5)
+theta_T_TCP_PFT = np.radians(7.5) #PFT portafilter tilt
 T_TCP_PFT_np = np.array([[np.cos(theta_T_TCP_PFT ), 0.00, np.sin(theta_T_TCP_PFT ), 32.00],
                          [    0.00, 1.00,   0.00, 0.00],
                          [-np.sin(theta_T_TCP_PFT ), 0.00,  np.cos(theta_T_TCP_PFT ), -27.56],
@@ -78,13 +78,18 @@ T_GR_PFP_np = np.array([[ 0.000000, 0.000000, -1.000000,   157.61],
                         [ 1.000000, 0.000000,  0.000000,  -250.45],
                         [ 0.000000, 0.000000,  0.000000, 1.000000]])
 
+
+
 #Transform to the Grinding Tool
 theta_CL_GT = np.radians(50)
 T_TCP_GTP_np = np.array([[ np.cos(theta_CL_GT), -np.sin(theta_CL_GT), 0.00,    0.00],
                         [ np.sin(theta_CL_GT),  np.cos(theta_CL_GT), 0.00,    0.00],
                         [                0.00,                 0.00, 1.00, -102.82],
                         [                0.00,                 0.00, 0.00,    1.00]])
-
+#T_TCP_GTP_np = np.array([[ np.cos(theta_CL_GT), np.sin(theta_CL_GT), 0.00,    0.00],
+#                        [ -np.sin(theta_CL_GT),  np.cos(theta_CL_GT), 0.00,    0.00],
+#                        [                0.00,                 0.00, 1.00, -102.82],
+#                        [                0.00,                 0.00, 0.00,    1.00]])
 #Transform to grinding tool but lever specifically 
 #Rotate the 50 degrees first
 theta_CL_GTL = np.radians(50)
@@ -93,7 +98,7 @@ T_TCP_GT_np = np.array([[ np.cos(theta_CL_GT), -np.sin(theta_CL_GT), 0.00,    0.
                         [                0.00,                 0.00, 1.00,   0.00],
                         [                0.00,                 0.00, 0.00,    1.00]])
 ##Then rotate to lever frame on the tool and move it to the postiton
-T_GT_GTL_np = np.array([[  0.000000, 0.000000, -1.000000,   117.06],
+T_GT_GTL_np = np.array([[  0.000000, 0.000000, -1.000000,   67.06],
                         [  0.000000,-1.000000,  0.000000,  0.00000],
                         [ -1.000000, 0.000000,  0.000000,  -40.00],
                         [ 0.000000, 0.000000,  0.000000, 1.000000]])
@@ -175,10 +180,12 @@ def coffeeMachineButtons():
 
 def portafilterPlacement():
    #Calculate placement position for portafilter under the grinder
+   PFP_compensation = rdk.transl(0,0,5)
    T_TCP_PFP_np = np.matmul(T_TCP_GR_np, np.matmul(T_GR_PFP_np, T_CL_PFT_np)) 
-   
+
    T_TCP_PFP = rdk.Mat(T_TCP_PFP_np.tolist())
    T_TCP_GR  = rdk.Mat(T_TCP_GR_np.tolist())
+   T_TCP_PFP = (T_TCP_PFP*PFP_compensation)
    
    #Steps from tools tand to Grinder
    J_Step1 = [-156.440000, -81.180000, -75.390000, -181.780000, 181.780000, -182.170000]
@@ -192,9 +199,9 @@ def portafilterPlacement():
    robot.MoveJ(J_Step1, blocking=True)
    robot.MoveJ(J_Step2, blocking=True)
    robot.MoveJ(J_Step3, blocking=True)
-   robot.MoveJ(J_Step4, blocking=True)
-   robot.MoveJ(J_Step5, blocking=True)
-   #robot.MoveL(T_TCP_PFP, blocking=True)
+   robot.MoveJ(J_Step4, blocking=True) 
+   robot.MoveJ(J_Step5, blocking=True) #pre placement position 
+   robot.MoveL(T_TCP_PFP, blocking=True)#placement position
    RDK.RunProgram('Portafilter Tool Detach (Grinder)', True)
 
 def pushButtonsOnGrinder():   
@@ -210,7 +217,6 @@ def pushButtonsOnGrinder():
    robot.MoveJ(J_GR_TS_Step4, blocking=True)  
    
    #go and grab the Grinder tool
-   #robot.MoveJ(J_intermediateGrinderTool, blocking=True)
    RDK.RunProgram('Grinder Tool Attach (Stand)', True)
    
    #Steps to go from the tool stand to the coffee grinder
@@ -227,18 +233,24 @@ def pushButtonsOnGrinder():
    robot.MoveJ(J_TS_GR_Step5, blocking=True)
    
    #Calculate position of button
-   T_TCP_GB_np = np.matmul(np.matmul(T_TCP_GR_np, T_GR_GB_np), T_TCP_GTP_np)
+   T_TCP_GB_np = np.matmul(np.matmul(T_TCP_GR_np, T_GR_GB_np),T_TCP_GTP_np)
    
    T_TCP_GB = rdk.Mat(T_TCP_GB_np.tolist())
-   J_TCP_GB1Preset = [101.294020, -35.722756, 59.343965, -23.621209, -18.665980, -130.000000]
-   J_TCP_GB1PushB1 = [103.143892, -36.255822, 60.387863, -24.132041, -16.816108, -130.000000]
-   J_TCP_GB2Preset = [101.723526, -33.217697, 54.419557, -21.201859, -18.236474, -130.000000]
-   J_TCP_GB2PushB1 = [103.534098, -33.777215, 55.522078, -21.744863, -16.425902, -130.000000] 
-   robot.MoveJ(J_TCP_GB1Preset, blocking=True)
-   robot.MoveL(J_TCP_GB1PushB1, blocking=True)
-   robot.MoveJ(J_TCP_GB2Preset, blocking=True)
-   robot.MoveL(J_TCP_GB2PushB1, blocking=True)   
-   robot.MoveL(T_TCP_GB, blocking=True) #This is the origin of plane
+   T_TCP_GB = T_TCP_GB * rdk.rotz(np.radians(40))
+   T_TCP_GB1Preset = T_TCP_GB * rdk.transl(0,0,-20)
+   T_TCP_GB1Push = T_TCP_GB * rdk.transl(0,0,10)
+   T_TCP_GB2Preset = T_TCP_GB * rdk.transl(0,17,-30)
+   T_TCP_GB2Push = T_TCP_GB * rdk.transl(0,17,10)
+
+   #robot.MoveJ(T_TCP_GB, blocking=True)
+   robot.MoveJ(T_TCP_GB1Preset, blocking=True)
+   robot.MoveL(T_TCP_GB1Push, blocking=True)
+   robot.MoveL(T_TCP_GB1Preset, blocking=True)
+   rdk.pause(4)
+   robot.MoveL(T_TCP_GB2Preset, blocking=True)
+   robot.MoveL(T_TCP_GB2Push, blocking=True)
+   robot.MoveL(T_TCP_GB2Preset, blocking=True)
+   #robot.MoveL(T_TCP_GB, blocking=True) #This is the origin of plane
    
 def pullLever():   
    #Calculate the position of the lever
@@ -246,20 +258,59 @@ def pullLever():
    
    T_TCP_GTL = rdk.Mat(T_TCP_GTL_np.tolist())
    
+   T_TCP_GTLPull = T_TCP_GTL * rdk.transl(0,0,-50) #This is the value I need to change to increase pulling position
+   
    J_TCP_GTLPreset = [107.180244, -60.445471, 91.787676, -31.342205, 51.970244, -130.000000]
-   J_TCP_GTLSet = [108.678666, -65.599414, 99.954969, -34.355555, 53.468666, -130.000000]
-   J_TCP_GTLPulled = [104.942740, -70.827352, 107.768210, -36.940858, 49.732740, -130.000000]
-   #robot.MoveJ(T_TCP_GTL, blocking=True)
+   
    robot.MoveJ(J_TCP_GTLPreset, blocking=True)
-   robot.MoveL(J_TCP_GTLSet, blocking=True)
-   robot.MoveL(J_TCP_GTLPulled, blocking=True)
+   robot.MoveL(T_TCP_GTL, blocking=True)
+   robot.MoveL(T_TCP_GTLPull, blocking=True)
+   robot.MoveL(T_TCP_GTL, blocking=True)
+   robot.MoveL(J_TCP_GTLPreset, blocking=True)
+   #RDK.RunProgram('Grinder Tool Detach (Stand)', True)
+   
+   J_GR_TS_Step1 = [99.470000, -60.440000, 91.780000, -31.340000, 51.970000, -129.990000]
+   J_GR_TS_Step2 = [87.630000, -81.980000, 112.860000, -112.910000, 3.560000, -167.400000] 
+   J_GR_TS_Step3 = [80.530000, -93.120000, 112.870000, -112.910000, 89.940000, -167.400000]
+   J_GR_TS_Step4 = [11.840000, -93.120000, 67.720000, -112.910000, 89.940000, -167.400000]
+   J_GR_TS_Step5 = [-11.840000, -93.120000, -64.110000, -112.910000, 89.940000, -167.400000]
+   J_GR_TS_Step6 = [-78.160000, -93.120000, -64.110000, -112.910000, 89.940000, -167.400000]
+   
+   robot.MoveJ(J_GR_TS_Step1, blocking=True)
+   robot.MoveJ(J_GR_TS_Step2, blocking=True)
+   robot.MoveJ(J_GR_TS_Step3, blocking=True)   
+   robot.MoveJ(J_GR_TS_Step4, blocking=True) 
+   robot.MoveJ(J_GR_TS_Step5, blocking=True)
+   robot.MoveJ(J_GR_TS_Step6, blocking=True) 
+   
    RDK.RunProgram('Grinder Tool Detach (Stand)', True)
+   
+def fetchFullPortafilter():  
+   
+   
+   J_TS_GR_Step1 = [-156.440000, -81.180000, -75.390000, -181.780000, 181.780000, -182.170000]
+   J_TS_GR_Step2 = [-156.440000, -81.180000, -127.130000, -181.780000, 181.780000, -182.170000]
+   J_TS_GR_Step3 = [-71.050000, -81.180000, -127.130000, -136.630000, 181.780000, -182.170000]
+   J_TS_GR_Step4 = [-14.210000, -65.350000, -148.510000, -148.510000, 293.470000, -231.680000]
+   J_TS_GR_Step5 = [-17.818290, -100.202192, -139.887909, -111.506940, 296.722534, -223.800304]   
+
+   robot.MoveJ(J_TS_GR_Step1, blocking=True)
+   robot.MoveJ(J_TS_GR_Step2, blocking=True)
+   robot.MoveJ(J_TS_GR_Step3, blocking=True)   
+   robot.MoveJ(J_TS_GR_Step4, blocking=True)   
+   robot.MoveJ(J_TS_GR_Step5, blocking=True)   
+   
+   RDK.RunProgram('Portafilter Tool Attach (Grinder)', True)
+   
+   J_GR_TA_Step1 = [-15.011332, -97.290411, -145.804176, -108.512264, 297.551540, -224.181867]
+   
+   robot.MoveJ(J_GR_TA_Step1, blocking=True)
    
 #coffeeMachineButtons()
 portafilterPlacement()
 pushButtonsOnGrinder()
 pullLever()
-
+fetchFullPortafilter()
 
    
 
