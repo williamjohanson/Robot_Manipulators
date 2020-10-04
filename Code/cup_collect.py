@@ -1,10 +1,17 @@
-# A more advanced example to get you moving with the RoboDK python API
-# Note, as there are many solutions for a given pose, sometimes when
-# running this, the robot may choose a weird pose that then doesn't allow
-# the subsequent motion (due to being near a singularity etc). If this occurs, 
-# just manually reset the robot startingposition to somewhere else and try again
-# C Pretty, 18 Sept 2019
-# version 2
+###################################################################################################
+""" Cup collection sole file/function.
+    Movement defined to collect the grabber unit and proceed through a series of intermediates to the 
+    cup stand.
+    Conversion to cup orientation and complete the grabbing of the cups.
+    Shifting the cup to the coffee machine in coffee machine orientation.
+    Shift the cup (without spilling) to the TA.
+
+    William Johanson 
+    ENMT482
+
+"""
+###################################################################################################
+
 
 # Define Imports.
 import robolink as rl       # RoboDK API
@@ -16,145 +23,231 @@ RDK = rl.Robolink()
 robot = RDK.Item('UR5')                     # Define the robot.
 world_frame = RDK.Item('UR5 Base')          # Define global frame as base of robot.
 target = RDK.Item('Home')                   # Existing target in station
+master_tool = RDK.Item('Master Tool')
 robot.setPoseFrame(world_frame)
 robot.setPoseTool(robot.PoseTool())
 
-master_tool = RDK.Item('Master Tool')
-robot.setPoseTool(master_tool)
+###################################################################################################
+""" Transforms. """
+###################################################################################################
 
-# Define existing subprograms.
-
-###
-###RDK.RunProgram("Cup Tool Attach (Stand)", True)
-###RDK.RunProgram("Cup Tool Detach (Stand)", True)
-###RDK.RunProgram("Cup Tool Open", True)
-###RDK.RunProgram("Cup Tool Close", True)
-###
-
-# Global angle transforms. Degrees --> radians.
-theta_coffee_machine = np.radians(15.04)
-theta_grinder = np.radians(134.86)
-theta_press = np.radians(59.73)
-
-# Directly use the RDK Matrix object from to hold pose (its an HT)
-T_home = rdk.Mat([[ 0.000000,  0.000000, 1.000000,  523.370000 ],
-                  [-1.000000,  0.000000, 0.000000, -109.000000 ],
-                  [-0.000000, -1.000000, 0.000000,  607.850000 ],
-                  [ 0.000000,  0.000000, 0.000000,    1.000000 ]])
-
-# Define the utilised base transforms.
-T_cup_base_np = np.array([[1.000000, 0.000000,  0.000000,    1.490000],
-                          [0.000000, 1.000000,  0.000000, -600.540000],
+# Base of the cups position in world frame.
+T_cup_base_np = np.array([[-1.000000, 0.000000, 0.000000,    1.490000],
+                          [0.000000, 1.000000, 0.000000, -600.540000],
                           [0.000000, 0.000000, -1.000000,  -20.000000],
-                          [0.000000, 0.000000,  0.000000,    1.000000]])
+                          [0.000000, 0.000000, 0.000000,    1.000000]])
 
+# Orientate frame to get the grabber to match cups.
+T_cup_grabber_frame_np = np.array([[1.000000, 0.000000,  0.000000, 0.000000],
+                                   [0.000000, 0.000000, -1.000000, 0.000000],
+                                   [0.000000, 1.000000,  0.000000, 0.000000],
+                                   [0.000000, 0.000000,  0.000000, 1.000000]])
+
+# Cup frame from world frame transform.
+cup_frame_np = np.matmul(T_cup_base_np, T_cup_grabber_frame_np)
+
+# Twist the end effector to complete orientation of grabber with cups and shift back to center the grabber piece with the cup base.
+T_cup_angle_np = np.array([[ np.cos(np.radians(140)), -np.sin(np.radians(140)), 0.000000,    0.000000],
+                           [np.sin(np.radians(140)), np.cos(np.radians(140)), 0.000000,  -47.000000],
+                           [               0.000000,               0.000000, 1.000000, -186.110000],
+                           [               0.000000,               0.000000, 0.000000,    1.000000]])
+
+# Shift by the desired angle with the cup transform.
+oriented_frame_np = np.matmul(cup_frame_np, T_cup_angle_np)   
+
+T_coffee_machine_base_np = np.array([[ np.cos(np.radians(74.96)), np.sin(np.radians(74.96)),  0.000000, -366.200000],
+                                     [-np.sin(np.radians(74.96)), np.cos(np.radians(74.96)),  0.000000, -389.800000],
+                                     [                  0.000000,                  0.000000, 1.000000,  341.380000],
+                                     [                  0.000000,                  0.000000,  0.000000,    1.000000]])
+
+T_cup_grabber_angle_np = np.array([[ np.cos(np.radians(40)), np.sin(np.radians(40)), 0.000000, 0.000000],
+                                   [-np.sin(np.radians(40)), np.cos(np.radians(40)), 0.000000, 0.000000],
+                                   [               0.000000,               0.000000, 1.000000, 0.000000],
+                                   [               0.000000,               0.000000, 0.000000, 1.000000]])
+
+# Coffee machine frame from world frame transform.
+coffee_machine_frame_np = np.matmul(T_coffee_machine_base_np, T_cup_grabber_frame_np)
+coffee_machine_orient_frame_np = np.matmul(coffee_machine_frame_np, T_cup_grabber_angle_np)
+
+###################################################################################################
+""" Offsets. """
+###################################################################################################
+
+# Set the offset matrix to move to the edge of the cup.
+cup_offset_np = np.array([[0.000000, 0.000000, 0.000000,    0.000000],
+                          [0.000000, 0.000000, 0.000000,  -54.000000],
+                          [0.000000, 0.000000, 0.000000, -100.000000],
+                          [0.000000, 0.000000, 0.000000,    0.000000]])    
+
+# Set the offset matrix to move to the edge of the cup.
+cup_centre_np = np.array([[0.000000, 0.000000, 0.000000,   0.000000],
+                          [0.000000, 0.000000, 0.000000, -54.000000],
+                          [0.000000, 0.000000, 0.000000,   0.000000],
+                          [0.000000, 0.000000, 0.000000,   0.000000]])   
+
+# Above cup to remove from stack
+above_cup_centre_np = np.array([[0.000000, 0.000000, 0.000000,   0.000000],
+                          [0.000000, 0.000000, 0.000000, -254.000000],
+                          [0.000000, 0.000000, 0.000000,   0.000000],
+                          [0.000000, 0.000000, 0.000000,   0.000000]])                             
+
+# Set an offset to align with coffee machine base
+coffee_machine_offset_np = np.array([[0.000000, 0.000000, 0.000000,  0.000000],
+                                     [0.000000, 0.000000, 0.000000, -300.000000],
+                                     [0.000000, 0.000000, 0.000000, -300.000000],
+                                     [0.000000, 0.000000, 0.000000, 0.000000]])      
+
+# Center cup under portafilter
+coffee_machine_center_np = np.array([[0.000000, 0.000000, 0.000000,    0.000000],
+                                     [0.000000, 0.000000, 0.000000, -290.000000],
+                                     [0.000000, 0.000000, 0.000000, -100.000000],
+                                     [0.000000, 0.000000, 0.000000,    0.000000]])                                                                                                
+
+# Add in offsets in the cup frame.
+Align_cup_np = np.matmul(cup_frame_np, T_cup_angle_np + cup_offset_np)  
+Grabber_cup_centre_np = np.matmul(cup_frame_np, T_cup_angle_np + cup_centre_np)  
+Grabber_above_cup_centre_np = np.matmul(cup_frame_np, T_cup_angle_np + above_cup_centre_np)  
+
+Align_coffee_machine_np = np.matmul(coffee_machine_frame_np, T_cup_grabber_angle_np + coffee_machine_offset_np)
+Center_coffee_machine_np = np.matmul(coffee_machine_frame_np, T_cup_grabber_angle_np + coffee_machine_center_np)
+
+###################################################################################################
+""" NP to rdk.Mat conversions. """
+###################################################################################################
+
+# Convert to rdk.Mat format.
 T_cup_base = rdk.Mat(T_cup_base_np.tolist())
 
-T_cup_frame_np = np.array([[-1.000000,  0.000000, 0.000000,    1.490000],
-                           [0.000000,  0.000000, -1.000000, -600.540000],
-                           [0.000000, 1.000000, 0.000000,  -20.000000],
-                           [0.000000,  0.000000, 0.000000,    1.000000]])
+T_cup_grabber_frame = rdk.Mat(T_cup_grabber_frame_np.tolist())
 
-T_cup_frame = rdk.Mat(T_cup_frame_np.tolist())
+cup_frame = rdk.Mat(cup_frame_np.tolist())
 
-#Induced offset.
-offset = 135.194
-T_cup_centre_tool_np = T_cup_frame_np + np.array([[0.000000, 0.000000, 0.000000,   0.000000],
-                                                  [0.000000, 0.000000, 0.000000, 186.110000],
-                                                  [0.000000, 0.000000, 0.000000,  47.000000 + offset],
-                                                  [0.000000, 0.000000, 0.000000,   1.000000]])
+T_cup_angle = rdk.Mat(T_cup_angle_np.tolist())
 
-T_cup_centre_tool = rdk.Mat(T_cup_centre_tool_np.tolist())
+oriented_frame = rdk.Mat(oriented_frame_np.tolist())
 
-T_cup_edge_np = T_cup_centre_tool_np + np.array([[0.000000, 0.000000, 0.000000,   0.000000],
-                                                 [0.000000, 0.000000, 0.000000,  36.080000],
-                                                 [0.000000, 0.000000, 0.000000, 147.250000],
-                                                 [0.000000, 0.000000, 0.000000,   1.000000]])
+Align_cup = rdk.Mat(Align_cup_np.tolist())
 
-T_cup_edge = rdk.Mat(T_cup_edge_np.tolist())
+Grabber_cup_centre = rdk.Mat(Grabber_cup_centre_np.tolist())
 
-T_cup_angle_np =  np.matmul(np.array([[np.cos(np.radians(40)), -np.sin(np.radians(40)), 0.000000, 0.000000],
-                                      [np.sin(np.radians(40)),  np.cos(np.radians(40)), 0.000000, 0.000000],
-                                      [              0.000000,                0.000000, 1.000000, 0.000000],
-                                      [              0.000000,                0.000000, 0.000000, 1.000000]]), T_cup_edge_np)
+coffee_machine_frame = rdk.Mat(coffee_machine_frame_np.tolist())
 
-T_cup_angle = rdk.Mat(T_cup_angle_np.tolist())                           
+coffee_machine_orient_frame = rdk.Mat(coffee_machine_orient_frame_np.tolist())
 
-T_tool_stand_base_np = np.array([[1.000000, 0.000000,  0.000000, -544.570000],
-                                 [0.000000, 1.000000,  0.000000,  -80.150000],
-                                 [0.000000, 0.000000, -1.000000,   19.050000],
-                                 [0.000000, 0.000000,  0.000000,    1.000000]])
+Align_coffee_machine = rdk.Mat(Align_coffee_machine_np.tolist())
 
-T_tool_stand_base = rdk.Mat(T_tool_stand_base_np.tolist())
+Center_coffee_machine = rdk.Mat(Center_coffee_machine_np.tolist())
 
-T_cup_tool_np = np.array([[1.000000, 0.000000,   0.000000, -358.130000],
-                          [0.000000, 1.000000,   0.000000,  102.680000],
-                          [0.000000, 0.000000, -1.000000,   532.670000],
-                          [0.000000, 0.000000,   0.000000,    1.000000]])
+Grabber_above_cup_centre = rdk.Mat(Grabber_above_cup_centre_np.tolist())
 
-T_cup_tool = rdk.Mat(T_cup_tool_np.tolist())
-
-#T_cup_tool_orient_np = np.array([[np.cos(np.radians(50)), -np.sin(np.radians(50)),  0.000000, -458.130000],
-#                                 [np.sin(np.radians(50)),  np.cos(np.radians(50)),  0.000000,  102.680000],
-#                                 [              0.000000,                0.000000, -1.000000,  532.670000],
-#                                 [              0.000000,                0.000000,  0.000000,    1.000000]])
-
-# Define Joint angle moves.
+###################################################################################################
+""" Intermediate points. """
+###################################################################################################
 
 J_cup_tool_orient = [-180.000000, -77.598188, -78.444613, -114.520498, 90.000000, -205.000000]
 
-J_cup_intermediate_point = [-45.454914, -68.283104, -92.404605, -109.833463, 90.216157, -11.624553]
+J_cup_intermediate_point = [-74.212134, -55.860633, -90.216293, -213.923075, -74.212134, -40.000000]
 
-J_cup_intermediate_point_2 =[-55.601183, -64.330829, -153.208867, -140.295331, -59.546467, 139.675612]
+J_cup_intermediate_point_2 = [112.500000, -106.070000, -266.790000, 289.290000, -96.420000, -33.750000
+]
+J_cup_intermediate_point_3 =[1.592416, -118.102180, -219.675634, 337.777813, 1.592416, -40.000000]
 
-J_cup_align_grab = [-63.510000, -85.360000, -143.820000, -130.810000, -63.510000, 142.140000]#
-#T_cup_tool_orient = rdk.Mat(T_cup_tool_orient_np.tolist())
+J_cup_to_coffee_machine_intermediate_point = [289.290000, -96.620000, -156.560000, -106.780000, -45.790000, -38.560000]
 
-
-
-""" ROBOT SCHEDULER. """
-# Set up Robot moves and function calls in desired fashion.
-#robot.MoveJ(T_home, blocking=True)                   
-
-#robot.MoveJ(J_cup_tool_orient, blocking=True) 
-
+###################################################################################################
+""" Scheduler. """
+###################################################################################################
+#robot.MoveJ(T_cup_base, blocking=True)
+#robot.MoveJ(cup_frame, blocking=True)
+#robot.MoveJ(oriented_frame, blocking=True)
+#robot.MoveJ(J_cup_tool_orient, blocking=True)
+#robot.MoveJ(oriented_frame, blocking=True)
 #RDK.RunProgram("Cup Tool Attach (Stand)", True)
-
+#robot.setPoseTool(master_tool)
+#robot.MoveJ(J_cup_tool_orient, blocking=True)
+#robot.MoveJ(T_cup_base, blocking=True)
+#robot.MoveJ(J_cup_intermediate_point, blocking=True)
+#robot.MoveJ(cup_frame, blocking=True)
+#robot.MoveJ(J_cup_intermediate_point, blocking=True)
+#robot.MoveJ(oriented_frame, blocking=True)
+#robot.MoveJ(J_cup_intermediate_point, blocking=True)
+#robot.MoveJ(J_cup_intermediate_point_2, blocking=True)
+#robot.MoveJ(J_cup_intermediate_point_2, blocking=True)
+#robot.MoveJ(Align_cup, blocking=True)
+#RDK.RunProgram("Cup Tool Open", True)
+#robot.MoveJ(Grabber_cup_centre, blocking=True)
+#RDK.RunProgram("Cup Tool Close", True)
+#robot.MoveJ(Align_cup, blocking=True)
+#robot.MoveJ(J_cup_intermediate_point, blocking=True)
+#robot.MoveJ(J_cup_to_coffee_machine_intermediate_point, blocking=True)
+#robot.MoveJ(coffee_machine_frame, blocking=True)
+#robot.MoveJ(coffee_machine_orient_frame, blocking=True)
+#robot.MoveJ(Align_coffee_machine, blocking=True)
 #RDK.RunProgram("Cup Tool Open", True)
 
-#robot.MoveJ(J_cup_intermediate_point, blocking=True) 
+#robot.MoveJ(Center_coffee_machine, blocking=True)
 
-#robot.MoveJ(J_cup_intermediate_point_2, blocking=True) 
+# Two intermediates.
 
-#robot.MoveJ(T_cup_base, blocking=True) 
+# Coffee machine align.
 
-#robot.MoveJ(T_cup_frame, blocking=True) 
+# Coffee machine place.
 
-#robot.MoveJ(T_cup_centre_tool, blocking=True) 
+# Return grabber to rack.
 
-robot.MoveJ(T_cup_edge, blocking=True) 
+# ...
 
-robot.MoveJ(T_cup_angle, blocking=True) 
+# Recollect grabber.
 
-#robot.MoveJ(J_cup_align_grab, blocking=True) 
+# BAck through coffee machine.
 
-#rdk.pause(10)
+# Collect and small intermediate movements to the TA?
 
-#RDK.RunProgram("Cup Tool Close", True)
-
-#robot.MoveJ(J_cup_intermediate_point_2, blocking=True) 
-
-#robot.MoveJ(J_cup_intermediate_point, blocking=True) 
-
-#robot.MoveJ(J_cup_tool_orient, blocking=True) 
+#robot.MoveJ(frame_base, blocking=True)
 
 #RDK.RunProgram("Cup Tool Detach (Stand)", True)
-
-# Note, the subfunctions change the reference frame, so you need to change it back
-# after calling them
-robot.setPoseFrame(world_frame)
-
-# you may also need to reset the toolframe
-robot.setPoseTool(robot.PoseTool())
+#RDK.RunProgram("Cup Tool Attach (Stand)", True)
 
 
+###################################################################################################
+# Good content
+
+robot.MoveJ(J_cup_tool_orient, blocking=True)
+
+RDK.RunProgram("Cup Tool Attach (Stand)", True)
+
+robot.setPoseTool(master_tool)
+
+robot.MoveJ(J_cup_tool_orient, blocking=True)
+
+robot.MoveJ(J_cup_intermediate_point, blocking=True)
+
+robot.MoveJ(Align_cup, blocking=True)
+
+RDK.RunProgram("Cup Tool Open", True)
+
+robot.MoveJ(Grabber_cup_centre, blocking=True)
+
+RDK.RunProgram("Cup Tool Close", True)
+
+robot.MoveJ(Grabber_above_cup_centre, blocking=True)
+
+robot.MoveJ(J_cup_intermediate_point, blocking=True)
+
+robot.MoveJ(Align_coffee_machine, blocking=True)
+
+robot.MoveJ(Center_coffee_machine, blocking=True)
+
+RDK.RunProgram("Cup Tool Open", True)
+
+robot.MoveJ(Align_coffee_machine, blocking=True)
+
+RDK.RunProgram("Cup Tool Close", True)
+
+robot.MoveJ(J_cup_intermediate_point, blocking=True)
+
+robot.MoveJ(J_cup_tool_orient, blocking=True)
+
+RDK.RunProgram("Cup Tool Detach (Stand)", True)
+
+robot.setPoseTool(master_tool)
