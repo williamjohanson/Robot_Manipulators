@@ -173,7 +173,7 @@ def portafilterPlacement():
    
    T_TCP_PFPPreset = T_TCP_PFP * rdk.transl(0,-1,-60)* rdk.roty(np.radians(-2))*T_CL_PFT
    #T_TCP_PFPPreset = T_TCP_PFP * rdk.transl(0,0,-40)* rdk.roty(np.radians(-2))*T_CL_PFT
-   T_TCP_PFPSet = T_TCP_PFP * rdk.transl(-3,-1,-2)* rdk.roty(np.radians(-2))*T_CL_PFT
+   T_TCP_PFPSet = T_TCP_PFP * rdk.transl(-3,-1,-3)* rdk.roty(np.radians(-1))*T_CL_PFT
 
    #Steps from tools tand to Grinder
    J_Step1 = [-156.440000, -81.180000, -75.390000, -181.780000, 181.780000, -182.170000]
@@ -192,7 +192,7 @@ def portafilterPlacement():
    robot.MoveL(T_TCP_PFPPreset, blocking=True)#placement position
    robot.MoveL(T_TCP_PFPSet, blocking=True)#placement position
    #robot.MoveL(T_TCP_PFP_ADJ, blocking=True)
-   RDK.RunProgram('Portafilter Tool Detach (Grinder)', True)
+   #RDK.RunProgram('Portafilter Tool Detach (Grinder)', True)
 
 def pushButtonsOnGrinder():   
    #Steps to go from coffee grinder to toolstand
@@ -250,12 +250,13 @@ def pullLever():
    T_TCP_GTL_np = np.matmul(np.matmul(T_TCP_GR_np, T_GR_GL_np),T_GT_GTL_np )
    T_TCP_GT = rdk.Mat(T_TCP_GT_np.tolist())
    T_TCP_GTL = rdk.Mat(T_TCP_GTL_np.tolist())
-   
+
    T_TCP_GTLStart = T_TCP_GTL*T_TCP_GT
    J_TCP_GTLPreset = [107.180244, -60.445471, 91.787676, -31.342205, 51.970244, -130.000000] 
    T_TCP_GTLPull1 = T_TCP_GTL * T_TCP_GT * rdk.transl(0,0,-50) #This is the value I need to change to increase pulling position
-   T_TCP_GTLPull_Turn = T_TCP_GTL * rdk.roty(np.radians(25)) *rdk.transl(0,0,-65)*T_TCP_GT
-   T_TCP_GTLPull2 = T_TCP_GTLPull_Turn * rdk.transl(0,0,-50)#Change this value to move second pull further
+   T_TCP_GTLPull_Turn = T_TCP_GTL * rdk.roty(np.radians(15)) *rdk.transl(0,0,-65)*T_TCP_GT
+   T_TCP_GTLPull2 = T_TCP_GTL * rdk.roty(np.radians(15)) *rdk.transl(-20, 0,-110)*T_TCP_GT #CHANGE LAST VALUE TO MAKE IT MOVE FURTHER  
+
    
    itterations= 3
    robot.MoveJ(J_TCP_GTLPreset, blocking=True)  
@@ -286,7 +287,7 @@ def pullLever():
    robot.MoveJ(J_GR_TS_Step5, blocking=True)
    robot.MoveJ(J_GR_TS_Step6, blocking=True) 
    
-   #RDK.RunProgram('Grinder Tool Detach (Stand)', True)
+   RDK.RunProgram('Grinder Tool Detach (Stand)', True)
    
 def fetchFullPortafilter():  
    
