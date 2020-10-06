@@ -93,21 +93,21 @@ J_intermediateGrinderTool = [-157.500000, -83.570000, -77.140000, -91.220000, 17
 ###################################################################################################
 """ Scheduler. """
 ###################################################################################################
-robot.setPoseTool(master_tool)
-robot.MoveJ(J_intermediateGrinderTool, blocking=True)
-RDK.RunProgram('Grinder Tool Attach (Stand)', True)
-robot.setPoseTool(master_tool)
-robot.MoveJ(J_intermediateGrinderTool, blocking=True)
+#robot.setPoseTool(master_tool)
+#robot.MoveJ(J_intermediateGrinderTool, blocking=True)
+#RDK.RunProgram('Grinder Tool Attach (Stand)', True)
+#robot.setPoseTool(master_tool)
+#robot.MoveJ(J_intermediateGrinderTool, blocking=True)
 #robot.MoveJ(coffee_machine_frame, blocking=True)
 #robot.MoveJ(coffee_machine_orient_frame, blocking=True)
-robot.MoveJ(button_center, blocking=True)
-robot.MoveJ(button_top, blocking=True)
-rdk.pause(7)
-robot.MoveJ(button_center, blocking=True)
-robot.MoveJ(button_bottom, blocking=True)
-robot.MoveJ(button_center, blocking=True)
-robot.MoveJ(J_intermediateGrinderTool, blocking=True)
-RDK.RunProgram('Grinder Tool Detach (Stand)', True)
+#robot.MoveJ(button_center, blocking=True)
+#robot.MoveJ(button_top, blocking=True)
+#rdk.pause(7)
+#robot.MoveJ(button_center, blocking=True)
+#robot.MoveJ(button_bottom, blocking=True)
+#robot.MoveJ(button_center, blocking=True)
+#robot.MoveJ(J_intermediateGrinderTool, blocking=True)
+#RDK.RunProgram('Grinder Tool Detach (Stand)', True)
 
 ###################################################################################################
 """ Good content. """

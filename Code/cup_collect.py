@@ -43,6 +43,12 @@ T_cup_grabber_frame_np = np.array([[1.000000, 0.000000,  0.000000, 0.000000],
                                    [0.000000, 1.000000,  0.000000, 0.000000],
                                    [0.000000, 0.000000,  0.000000, 1.000000]])
 
+# Orientate frame to get the grabber to match cups.
+T_coffee_grabber_frame_np = np.array([[1.000000, 0.000000,  0.000000, 0.000000],
+                                      [0.000000, 0.000000, -1.000000, 0.000000],
+                                      [0.000000, -1.000000, 0.000000, 0.000000],
+                                      [0.000000, 0.000000,  0.000000, 1.000000]])                                   
+
 # Cup frame from world frame transform.
 cup_frame_np = np.matmul(T_cup_base_np, T_cup_grabber_frame_np)
 
@@ -66,7 +72,7 @@ T_cup_grabber_angle_np = np.array([[np.cos(np.radians(140)), -np.sin(np.radians(
                                    [               0.000000,               0.000000, 0.000000, 1.000000]])
 
 # Coffee machine frame from world frame transform.
-coffee_machine_frame_np = np.matmul(T_coffee_machine_base_np, T_cup_grabber_frame_np)
+coffee_machine_frame_np = np.matmul(T_coffee_machine_base_np, T_coffee_grabber_frame_np)
 coffee_machine_orient_frame_np = np.matmul(coffee_machine_frame_np, T_cup_grabber_angle_np)
 
 ###################################################################################################
@@ -93,13 +99,13 @@ above_cup_centre_np = np.array([[0.000000, 0.000000, 0.000000,    0.000000],
 
 # Set an offset to align with coffee machine base
 coffee_machine_offset_np = np.array([[0.000000, 0.000000, 0.000000,    0.000000],
-                                     [0.000000, 0.000000, 0.000000, -160.000000],
-                                     [0.000000, 0.000000, 0.000000, -300.000000],
+                                     [0.000000, 0.000000, 0.000000,  -50.000000],
+                                     [0.000000, 0.000000, 0.000000, -250.000000],
                                      [0.000000, 0.000000, 0.000000,    0.000000]])      
 
 # Center cup under portafilter
 coffee_machine_center_np = np.array([[0.000000, 0.000000, 0.000000,    0.000000],
-                                     [0.000000, 0.000000, 0.000000, -160.000000],
+                                     [0.000000, 0.000000, 0.000000,  -50.000000],
                                      [0.000000, 0.000000, 0.000000, -100.000000],
                                      [0.000000, 0.000000, 0.000000,    0.000000]])                                                                                                
 
@@ -146,13 +152,13 @@ Grabber_above_cup_centre = rdk.Mat(Grabber_above_cup_centre_np.tolist())
 
 J_cup_tool_orient = [-177.697218, -59.469365, -88.212296, -122.881182, 90.022633, -202.697330]
 
-J_cup_intermediate_point = [-74.212134, -55.860633, -90.216293, -213.923075, -74.212134, -40.000000]
+J_cup_intermediate_point = [-74.210000, -55.860000, -90.220000, -213.920000, 0.000000, -40.000000]
 
-J_cup_intermediate_point_2 = [112.500000, -106.070000, -266.790000, 289.290000, -96.420000, -33.750000
-]
+J_cup_intermediate_point_2 = [-76.740000, -102.140000, -81.270000, -356.590000, 0.000000, -40.000000]
+
 J_cup_intermediate_point_3 =[1.592416, -118.102180, -219.675634, 337.777813, 1.592416, -40.000000]
 
-J_cup_to_coffee_machine_intermediate_point = [289.290000, -96.620000, -156.560000, -106.780000, -45.790000, -38.560000]
+J_cup_to_coffee_machine_intermediate_point = [95.050000, -105.730000, 119.070000, -13.330000, 109.290000, -220.000000]
 
 ###################################################################################################
 """ Scheduler. """
@@ -179,10 +185,11 @@ J_cup_to_coffee_machine_intermediate_point = [289.290000, -96.620000, -156.56000
 #RDK.RunProgram("Cup Tool Close", True)
 #robot.MoveJ(Align_cup, blocking=True)
 #robot.MoveJ(J_cup_intermediate_point, blocking=True)
+#robot.MoveJ(J_cup_intermediate_point_2, blocking=True)
 #robot.MoveJ(J_cup_to_coffee_machine_intermediate_point, blocking=True)
 #robot.MoveJ(coffee_machine_frame, blocking=True)
 #robot.MoveJ(coffee_machine_orient_frame, blocking=True)
-#robot.MoveJ(Align_coffee_machine, blocking=True)
+robot.MoveJ(Align_coffee_machine, blocking=True)
 #RDK.RunProgram("Cup Tool Open", True)
 
 #robot.MoveJ(Center_coffee_machine, blocking=True)
@@ -212,6 +219,7 @@ J_cup_to_coffee_machine_intermediate_point = [289.290000, -96.620000, -156.56000
 ###################################################################################################
 """ Good content. """
 ###################################################################################################
+'''
 robot.MoveJ(J_cup_tool_orient, blocking=True)
 
 RDK.RunProgram("Cup Tool Attach (Stand)", True)
@@ -234,6 +242,8 @@ robot.MoveJ(Grabber_above_cup_centre, blocking=True)
 
 robot.MoveJ(J_cup_intermediate_point, blocking=True)
 
+robot.MoveJ(J_cup_to_coffee_machine_intermediate_point, blocking=True)
+
 robot.MoveJ(Align_coffee_machine, blocking=True)
 
 robot.MoveJ(Center_coffee_machine, blocking=True)
@@ -244,6 +254,8 @@ robot.MoveJ(Align_coffee_machine, blocking=True)
 
 RDK.RunProgram("Cup Tool Close", True)
 
+robot.MoveJ(J_cup_to_coffee_machine_intermediate_point, blocking=True)
+
 robot.MoveJ(J_cup_intermediate_point, blocking=True)
 
 robot.MoveJ(J_cup_tool_orient, blocking=True)
@@ -251,3 +263,4 @@ robot.MoveJ(J_cup_tool_orient, blocking=True)
 RDK.RunProgram("Cup Tool Detach (Stand)", True)
 
 robot.setPoseTool(master_tool)
+'''
