@@ -35,6 +35,9 @@ master_tool = RDK.Item('Master Tool')
 robot.setPoseFrame(world_frame)
 robot.setPoseTool(robot.PoseTool())
 
+#RDK.RunProgram('Portafilter Tool Detach (Stand)', True)
+#RDK.RunProgram('Grinder Tool Detach (Stand)', True)
+#RDK.RunProgram('Cup Tool Detach (Stand)', True)
 #####################################################################################################################################################
 """ SECTION 1 """
 #####################################################################################################################################################
@@ -51,7 +54,7 @@ robot.setPoseTool(robot.PoseTool())
 # GTL = Grinder Tool Lever frame
 
 # Equipment Frames
-# GR  = Grinder base frame
+# GBF  = Grinder base frame
 # PFP = Portafilter Placement frame under the grinder
 # GB  = Grinder Buttons Frame
 # GL  = Grinder Lever Frame
@@ -91,7 +94,7 @@ T_TCP_PFA = rdk.Mat(T_TCP_PFA_np.tolist())
 T_TCP_PFB = rdk.Mat(T_TCP_PFB_np.tolist())
 T_TCP_PFB = T_TCP_PFB * T_TCP_PFA #Resulting transform from the TCP to the PFB
 
-T_TCP_PF = rdk.Mat(T_TCP_PF_np.tolist())
+T_TCP_PFF = rdk.Mat(T_TCP_PFF_np.tolist())
 T_TCP_PFF = T_TCP_PFF* T_TCP_PFA #Resulting transform from the TCP to the PFF
 
 ###################################################################################################
@@ -124,46 +127,46 @@ T_GTA_GTL = rdk.Mat(T_GTA_GTL_np.tolist())
 #####################################################################################################################################################
 """ Grinder Transforms """
 ###################################################################################################
-#Transform from robot base frame to the grinder machine base frame
-theta_RB_GR = np.radians(44.79)
-T_RB_GR_np = np.array([[ -np.cos(theta_RB_GR),  -np.sin(theta_RB_GR),  0.000000,   482.29],
-                       [  np.sin(theta_RB_GR),  -np.cos(theta_RB_GR),  0.000000,  -433.74],
-                       [             0.000000,              0.000000,  1.000000,   314.13],
-                       [             0.000000,              0.000000,  0.000000, 1.000000]])
-  
-#Transform from the grinder machine to the button frame
-theta_GR_GB = np.radians(164.75)
-T_GR_GB_np = np.array([[  np.cos(theta_GR_GB),  0.000000, -np.sin(theta_GR_GB),    -80.71],
-                       [  np.sin(theta_GR_GB),  0.000000,  np.cos(theta_GR_GB),     94.26],
-                       [             0.000000,  -1.00000,             0.000000,   -227.68],
-                       [             0.000000,  0.000000,             0.000000,  1.000000]])
-
-#Transform from the Grinder Machine to the Lever frame
-theta_GR_GL = np.radians(10)
-T_GR_GL_np = np.array([[ np.cos(theta_GR_GL),  0.000000,  np.sin(theta_GR_GL),    -35.82],
-                       [  np.sin(theta_GR_GL), 0.000000, -np.cos(theta_GR_GL),     83.80],
-                       [             0.000000,  1.00000,             0.000000,   -153.00],
-                       [             0.000000, 0.000000,             0.000000, 1.000000]])
-
+#Transform from robot base frame (RB) to the grinder machine base frame (GBF)
+theta_RB_GBF = np.radians(44.79)
+T_RB_GBF_np = np.array([[ -np.cos(theta_RB_GBF),  -np.sin(theta_RB_GBF),  0.000000,   482.29],
+                        [  np.sin(theta_RB_GBF),  -np.cos(theta_RB_GBF),  0.000000,  -433.74],
+                        [              0.000000,               0.000000,  1.000000,   314.13],
+                        [              0.000000,               0.000000,  0.000000,     1.00]])
+ 
 #Transfrom from grinder machine to the Portafilter placement position
-T_GR_PFP_np = np.array([[ 0.000000, 0.000000, -1.000000,   157.61],
+T_GBF_PFP_np = np.array([[ 0.000000, 0.000000, -1.000000,   157.61],
                         [ 0.000000, 1.000000,  0.000000,  0.00000],
                         [ 1.000000, 0.000000,  0.000000,  -250.45],
                         [ 0.000000, 0.000000,  0.000000, 1.000000]])
+  
+#Transform from the grinder base frame (GBF) to the grinder button frame (GB)
+theta_GBF_GBU = np.radians(164.75)
+T_GBF_GBU_np = np.array([[np.cos(theta_GBF_GBU), 0.000000, -np.sin(theta_GBF_GBU),    -80.71],
+                         [np.sin(theta_GBF_GBU), 0.000000,  np.cos(theta_GBF_GBU),     94.26],
+                         [             0.000000, -1.00000,               0.000000,   -227.68],
+                         [             0.000000, 0.000000,               0.000000,  1.000000]])
 
+#Transform from the Grinder Machine to the Lever frame
+theta_GBF_GL = np.radians(10)
+T_GBF_GL_np = np.array([[ np.cos(theta_GBF_GL),  0.00000,  np.sin(theta_GBF_GL),    -35.82],
+                       [  np.sin(theta_GBF_GL),  0.00000, -np.cos(theta_GBF_GL),     83.80],
+                       [              0.000000,  1.00000,              0.000000,   -153.00],
+                       [              0.000000,  0.00000,              0.000000,      1.00]])
+  
 #NP to RDK.MAT conversions
-T_RB_GR  = rdk.Mat(T_RB_GR_np.tolist())
-T_GR_GB = rdk.Mat(T_GR_GB_np.tolist())
-T_GR_GL = rdk.Mat(T_GR_GL_np.tolist())
-T_GR_PFP = rdk.Mat(T_GR_PFP_np.tolist())
+T_RB_GBF  = rdk.Mat(T_RB_GBF_np.tolist())
+T_GBF_PFP = rdk.Mat(T_GBF_PFP_np.tolist())
+T_GBF_GBU = rdk.Mat(T_GBF_GBU_np.tolist())
+T_GBF_GL = rdk.Mat(T_GBF_GL_np.tolist())
 
 ###################################################################################################
 """ Tamper Stand Transforms"""
 ###################################################################################################
 #Transform from the robot base frame (RB) to the tamper stand base frame (TBF)
 theta_RB_TBF = np.radians(59.73)
-T_RB_TBF_np = np.array([[  np.cos(theta_RBA_TBF),  np.sin(theta_RBA_TBF),  0.000000, 599.13],
-                        [ -np.sin(theta_RBA_TBF),  np.cos(theta_RBA_TBF),  0.000000,    0.0],
+T_RB_TBF_np = np.array([[  np.cos(theta_RB_TBF),  np.sin(theta_RB_TBF),  0.000000, 599.13],
+                        [ -np.sin(theta_RB_TBF),  np.cos(theta_RB_TBF),  0.000000,    0.0],
                         [               0.000000,               0.000000,  1.000000, 211.07],
                         [               0.000000,               0.000000,  0.000000,   1.00]])
 
@@ -180,7 +183,7 @@ T_TBF_SC_np = np.array([[ 0.00, 1.00,  0.00,   70],
                         [ 0.00, 0.00,  0.00, 1.00]])
 
 #NP to RDK.MAT conversions                 
-T_RB_TBF = rdk.Mat(T_RB_TA_np.tolist()) #transform from base to Tamper stand
+T_RB_TBF = rdk.Mat(T_RB_TBF_np.tolist()) #transform from base to Tamper stand
 T_TBF_TA = rdk.Mat(T_TBF_TA_np.tolist())
 T_TBF_SC = rdk.Mat(T_TBF_SC_np.tolist()) #Transform from tamper stand to SC frame
 
@@ -192,7 +195,7 @@ def portafilterPlacement():
    """ This function performs task 1 and places the portafilter under the grinder """
    
    #Calculate placement position for portafilter under the grinder
-   T_RB_PFP = T_RB_GR *T_GR_PFP #Waht we multiple by before the adjustment
+   T_RB_PFP = T_RB_GBF *T_GBF_PFP #Waht we multiple by before the adjustment
    
    
    T_TCP_PFPPreset = T_RB_PFP * rdk.transl(0,-1,-60)* rdk.roty(np.radians(-2)) * T_TCP_PFB
@@ -245,31 +248,31 @@ def pushButtonsOnGrinder():
    robot.MoveJ(J_TS_GR_Step4, blocking=True)   
    robot.MoveJ(J_TS_GR_Step5, blocking=True)
    
-   #Calculate position of button
-   T_RB_GB = T_RB_GR * T_GR_GB * T_TCP_GTP * rdk.rotz(np.radians(40)) #Had to move 40 degrees to make the y adjustment parrallel to floor
+   #Calculate transform from the robot base to the grinder tool pusher (GTP)
+   T_RB_GTP = T_RB_GBF * T_GBF_GBU * T_TCP_GTP * rdk.rotz(np.radians(40)) #Had to move 40 degrees to make the y adjustment parrallel to floor
    
    # Calculate useful positions for the button pushes
-   T_TCP_GB1Preset = T_RB_GB * rdk.transl(0,0,-20)
-   T_TCP_GB1Push = T_RB_GB * rdk.transl(0,0,10)
-   T_TCP_GB2Preset = T_RB_GB * rdk.transl(0,17,-30)
-   T_TCP_GB2Push = T_RB_GB * rdk.transl(0,17,10)
+   T_TCP_GTP1Preset = T_RB_GTP * rdk.transl(0,0,-20)
+   T_TCP_GTP1Push = T_RB_GTP * rdk.transl(0,0,10)
+   T_TCP_GTP2Preset = T_RB_GTP * rdk.transl(0,17,-30)
+   T_TCP_GTP2Push = T_RB_GTP * rdk.transl(0,17,10)
 
-   robot.MoveJ(T_TCP_GB2Preset, blocking=True)
-   robot.MoveL(T_TCP_GB2Push, blocking=True)
-   robot.MoveL(T_TCP_GB2Preset, blocking=True)
+   robot.MoveJ(T_TCP_GTP2Preset, blocking=True)
+   robot.MoveL(T_TCP_GTP2Push, blocking=True)
+   robot.MoveL(T_TCP_GTP2Preset, blocking=True)
    
    rdk.pause(3) #Let the grinder run for 3 seconds  
    
-   robot.MoveL(T_TCP_GB1Preset, blocking=True)
-   robot.MoveL(T_TCP_GB1Push, blocking=True)
-   robot.MoveL(T_TCP_GB1Preset, blocking=True)
+   robot.MoveL(T_TCP_GTP1Preset, blocking=True)
+   robot.MoveL(T_TCP_GTP1Push, blocking=True)
+   robot.MoveL(T_TCP_GTP1Preset, blocking=True)
 
 ###################################################################################################
 def pullLever():
    """ This function performs task 3 by pulling dosing lever on the grinder 3 times """
    
    #Calculate the position of the lever
-   T_TCP_GTL = T_RB_GR * T_GR_GL * T_GTA_GTL
+   T_TCP_GTL = T_RB_GBF * T_GBF_GL * T_GTA_GTL
 
    J_TCP_GTLPreset    = [107.180244, -60.445471, 91.787676, -31.342205, 51.970244, -130.000000] 
    T_TCP_GTLStart     = T_TCP_GTL * T_TCP_GTA # All of the other positions calculated relative to start
@@ -349,10 +352,10 @@ def tamperScraper():
    T_RB_PFSC  = T_RB_TBF * T_TBF_SC    #This defines the frame for the scraper part of the tamper stand
    
    # Define the points to move between relative to frame of the scraper
-   T_RB_SCPreset = T_RB_PFSC * rdk.transl(-30,0,-100)     * T_TCP_PFT_F  
-   T_RB_SCPush   = T_RB_PFSC * rdk.transl(-30,0,50)       * T_TCP_PFT_F      
-   T_RB_SCDrop   = T_RB_PFSC * rdk.transl(-100,0,-100)    * T_TCP_PFT_F    
-   T_RB_SCSlide  = T_RB_PFSC * rdk.transl(-100,-150,-100) * T_TCP_PFT_F    
+   T_RB_SCPreset = T_RB_PFSC * rdk.transl(-30,0,-100)     * T_TCP_PFF  
+   T_RB_SCPush   = T_RB_PFSC * rdk.transl(-30,0,50)       * T_TCP_PFF      
+   T_RB_SCDrop   = T_RB_PFSC * rdk.transl(-100,0,-100)    * T_TCP_PFF    
+   T_RB_SCSlide  = T_RB_PFSC * rdk.transl(-100,-150,-100) * T_TCP_PFF    
    
    # Move portafilter back and forth along scraper to remove excess coffee
    robot.MoveJ(T_RB_SCPreset, blocking=True)
