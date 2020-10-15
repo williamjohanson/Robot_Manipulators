@@ -1,6 +1,6 @@
 #####################################################################################################################################################
 #
-# William Johanson Student ID
+# William Johanson 12015205
 # Liam Hare 27686710
 # ENMT482
 # Robot Manipulators
@@ -10,10 +10,9 @@
 
 
 ###################################################################################################
-""" READ ME: This code is set ip into two sections. The first sections handles all of the tasks from 1-6 as defined in the introduction of the report and the
+""" READ ME: This code is set up into two sections. The first sections handles all of the tasks from 1-6 as defined in the introduction of the report and the
 second section handles the tasks from 7-10. In Section 1 to help with the accronys, there is a Key at the start. The acronyms shouls be read where T = Transform
-followed by the parent and then the child frame. All
-
+followed by the parent and then the child frame. 
 
 """
 
@@ -410,16 +409,16 @@ def passPortafilter():
 ###################################################################################################
 
 # Orientate frame to get the grabber to match cups.
-T_coffee_button_frame_np = np.array([[0.000000, 0.000000,  1.000000, 0.000000],
-                                     [0.000000, 1.000000, 0.000000, 0.000000],
-                                     [-1.000000, 0.000000,  0.000000, 0.000000],
-                                     [0.000000, 0.000000,  0.000000, 1.000000]])
+T_coffee_button_frame_np = np.array([[ 0.000000, 0.000000, 1.000000, 0.000000],
+                                     [ 0.000000, 1.000000, 0.000000, 0.000000],
+                                     [-1.000000, 0.000000, 0.000000, 0.000000],
+                                     [ 0.000000, 0.000000, 0.000000, 1.000000]])
 
 # Set the base frame of the coffee machine.
-T_coffee_machine_base_np = np.array([[ np.cos(np.radians(74.96)), np.sin(np.radians(74.96)),  0.000000, -366.200000],
-                                     [-np.sin(np.radians(74.96)), np.cos(np.radians(74.96)),  0.000000, -389.800000],
+T_coffee_machine_base_np = np.array([[ np.cos(np.radians(74.96)), np.sin(np.radians(74.96)), 0.000000, -366.200000],
+                                     [-np.sin(np.radians(74.96)), np.cos(np.radians(74.96)), 0.000000, -389.800000],
                                      [                  0.000000,                  0.000000, 1.000000,  341.380000],
-                                     [                  0.000000,                  0.000000,  0.000000,    1.000000]])
+                                     [                  0.000000,                  0.000000, 0.000000,    1.000000]])
 
 # Angle to orient the end effector.
 T_cup_grabber_angle_np = np.array([[ np.cos(np.radians(40)), np.sin(np.radians(40)), 0.000000, 0.000000],
@@ -445,7 +444,7 @@ button_top_np = np.array([[0.000000, 0.000000, 0.000000,   10.250000],
                           [0.000000, 0.000000, 0.000000, -152.000000],
                           [0.000000, 0.000000, 0.000000,    0.000000]])         
 
-button_bottom_np = np.array([[0.000000, 0.000000, 0.000000,   30.25000],
+button_bottom_np = np.array([[0.000000, 0.000000, 0.000000,   30.250000],
                              [0.000000, 0.000000, 0.000000,  -30.000000],
                              [0.000000, 0.000000, 0.000000, -152.000000],
                              [0.000000, 0.000000, 0.000000,    0.000000]])                                                                                                
